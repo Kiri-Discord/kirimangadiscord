@@ -1,8 +1,8 @@
 
-# Kaiwa
+# Kiri
 
 ## Info
-Kaiwa is a bot that analyzes your server members's text conversation
+Kiri is a bot that keep you up-to-date with your favourite manga, and allowing you to read them right on Discord. Powered by MangaDex and discord.js.
 
 ***
 
@@ -12,7 +12,7 @@ DM **magix#3994** for support and help.
 
 
 ## License
-Kaiwa is licensed under the terms of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://github.com/ryzenix/kaiwa/blob/main/LICENSE) ("CC-BY-NC-SA-4.0"). Commercial use is not allowed under this license. This includes any kind of revenue made with or based upon the software, even donations.
+Kiri is licensed under the terms of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://github.com/ryzenix/kirimangadiscord/blob/main/LICENSE) ("CC-BY-NC-SA-4.0"). Commercial use is not allowed under this license. This includes any kind of revenue made with or based upon the software, even donations.
 
 The CC-BY-NC-SA-4.0 allows you to:
 - [x] **Share** -- copy and redistribute the material in any medium or format
@@ -24,7 +24,3 @@ Under the following terms:
 - **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 
 More information can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-
-## Pull request
-Pull request are always welcome! You just need to sign this SLA [here](https://cla-assistant.io/ryzenix/kaiwa) or we can't merge your changes.
-[![CLA assistant](https://cla-assistant.io/readme/badge/ryzenix/kaiwa)](https://cla-assistant.io/ryzenix/kaiwa)
