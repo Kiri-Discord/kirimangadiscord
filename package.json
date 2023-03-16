@@ -18,7 +18,7 @@
     },
     "homepage": "https://github.com/ryzenix/kaiwa#readme",
     "dependencies": {
-        "discord.js": "^14.7.1",
+        "discord.js": "^14.8.0",
         "dotenv": "^16.0.3",
         "glob": "^9.3.0",
         "heatsync": "^2.4.0",
