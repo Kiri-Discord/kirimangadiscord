@@ -17,7 +17,7 @@ const { REST, Routes } = require('discord.js');
             commands.push(command.info.slash.toJSON());
         };
     };
-    
+
     const categories = files.filter(file => !Boolean(path.extname(file)));
 
     if (categories.length) {
@@ -31,8 +31,8 @@ const { REST, Routes } = require('discord.js');
                 const folders = el.filter(file => !Boolean(path.extname(file)));
                 if (!cmds.length && !folders.length) continue;
                 const slashCommand = new SlashCommandBuilder()
-                .setName(categoryData.name)
-                .setDescription(categoryData.description)
+                    .setName(categoryData.name)
+                    .setDescription(categoryData.description)
                 if (cmds.length) {
                     console.log(`Found ${cmds.length} individual command(s) inside ${directory}`);
                     for (const cmd of cmds) {
@@ -52,8 +52,8 @@ const { REST, Routes } = require('discord.js');
                         console.log(`Found ${cmdFiles.length} individual command(s) inside folder ${folder} inside folder ${directory}`);
                         if (!cmdFiles.length) continue;
                         const slashCommandSubGroup = new SlashCommandSubcommandGroupBuilder()
-                        .setName(subCategoryData.name)
-                        .setDescription(subCategoryData.description)
+                            .setName(subCategoryData.name)
+                            .setDescription(subCategoryData.description)
                         for (const category of cmdFiles) {
                             const command = require(`../commands/${directory}/${folder}/${category}`);
                             slashCommandSubGroup.addSubcommand(command.info.slash);
@@ -77,10 +77,9 @@ const { REST, Routes } = require('discord.js');
     try {
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
         const data = await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID),
-            { body: commands },
+            Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID), { body: commands },
         );
-    
+
         console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
         console.error(error);

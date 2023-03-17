@@ -18,7 +18,7 @@ module.exports = class Bot extends Client {
         constructor(options) {
                 super(options);
                 this.commands = new Collection();
-                this.manga = new Manga(this, process.env.MANGADEX_USERNAME, process.env.MANGADEX_PASSWORD);
+                this.manga = new Manga(this);
                 this.mangadexapi
                 this.helps = new Collection();
                 this.deletedChannels = new WeakSet();

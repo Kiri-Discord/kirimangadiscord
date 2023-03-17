@@ -1,21 +1,21 @@
 const MFA = require('mangadex-full-api');
 
 module.exports = class Manga {
-    constructor(client, username, password) {
-        this.instance = null;
-        this.username = username;
-        this.password = password;
+    constructor(client) {
+        this.client = client;
     };
-    async login() {
-        const instance = await MFA.login(this.username, this.password, './bin/.md_cache').catch(err => {
-            client.logger.error(err);
-            return null
+    async search(options) {
+        if (!options) return {
+            error: true,
+            message: 'No options provided.'
+        };
+        const results = await MFA.Manga.search(options, true).catch((err) => {
+            this.client.logger.error(err);
+            return {
+                error: true,
+                message: err.message
+            }
         });
-        if (instance) {
-            this.instance = instance;
-            return instance;
-        } else {
-            return null
-        }
-    }
+        return results;
+    };
 }

@@ -34,6 +34,5 @@ require('./handler/Event')(client);
 
 (async() => {
     await require('./handler/Commands')(client);
-    await client.manga.login();
     client.login(process.env.TOKEN).catch((err) => client.logger.log("error", err));
 })()
