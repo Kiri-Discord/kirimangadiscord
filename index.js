@@ -10,7 +10,7 @@ if (!fs.existsSync("logs/error")) fs.mkdirSync("logs/error");
 const { GatewayIntentBits, Sweepers } = require('discord.js');
 const Client = require('./structures/Client');
 
-const client = new Client({ 
+const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
     sweepers: {
         messages: {
@@ -18,12 +18,11 @@ const client = new Client({
             filter: Sweepers.filterByLifetime({
                 lifetime: 900,
                 getComparisonTimestamp: (e) =>
-                    e.editedTimestamp ?? e.createdTimestamp,
+                    Boolean(e.editedTimestamp) ? e.editedTimestamp : e.createdTimestamp,
             }),
         },
     }
 });
-
 process.on("unhandledRejection", (error) => {
     client.logger.error(error);
 });
@@ -35,5 +34,6 @@ require('./handler/Event')(client);
 
 (async() => {
     await require('./handler/Commands')(client);
+    await client.manga.login();
     client.login(process.env.TOKEN).catch((err) => client.logger.log("error", err));
 })()
