@@ -67,14 +67,21 @@ module.exports = class Util {
 	
 						const result = await res.awaitModalSubmit({
 							filter: (i) => {
-								return i.customId === 'jumping' && i.user.id === authorId
+								if (i.customId !== 'jumping' || i.user.id !== authorId) return false;
+								else if (isNaN(i.fields.getTextInputValue('numberJumping'))  || Number(i.fields.getTextInputValue('numberJumping')) > array.length || Number(i.fields.getTextInputValue('numberJumping')) < 1) {
+									i.reply({
+										content: `You should enter a vaild number \`1 - ${array.length}\` <:hutaoWHEEZE:1085918596955394180>`,
+										ephemeral: true
+									})
+									return false
+								} else return true;
 							},
 							time: 15000
 						}).catch(() => null);;
 						if (!result) return;
 						else {
 							const number = result.fields.getTextInputValue('numberJumping');
-							currentPage = parseInt(number) - 1;
+							currentPage = Number(number) - 1;
 							result.update({
 								content: `Page ${number} of ${array.length}`,
 								embeds: [array[currentPage]]
@@ -98,15 +105,22 @@ module.exports = class Util {
 	
 						const mangaModalResult = await res.awaitModalSubmit({
 							filter: (i) => {
-								return i.customId === 'info' && i.user.id === authorId
+								if (i.customId !== 'info' || i.user.id !== authorId) return false;
+								else if (isNaN(i.fields.getTextInputValue('mangaNumber')) || Number(i.fields.getTextInputValue('mangaNumber')) > resLength || Number(i.fields.getTextInputValue('mangaNumber')) < 1) {
+									i.reply({
+										content: `You should enter a vaild number \`1 - ${resLength}\` <:hutaoWHEEZE:1085918596955394180>`,
+										ephemeral: true
+									})
+									return false
+								} else return true;
 							},
 							time: 15000
-						});
+						}).catch(() => null);
 						if (!mangaModalResult) return;
 						else {
 							await mangaModalResult.deferUpdate();
 							const number = mangaModalResult.fields.getTextInputValue('mangaNumber');
-							endValue = number;
+							endValue = Number(number);
 							collector.stop();
 						};
 						break;

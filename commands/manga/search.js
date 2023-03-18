@@ -20,7 +20,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
     const originalLanguage = interaction.options.getString('original-language');
     const translatedLanguage = interaction.options.getString('translated-language');
 
-    await interaction.deferReply();
+    if (!bridgedTitle) await interaction.deferReply();
 
     let options = {
         limit: 40,
@@ -164,7 +164,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
 
         const filter = async res => {
             if (res.user.id !== interaction.user.id) {
-                res.followUp({
+                res.reply({
                     embeds: [{
                         description: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`
                     }],
@@ -178,7 +178,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
             const targetManga = results[result.value - 1];
             const commandFile = client.commands.get('manga');
             const command = commandFile.subCommandsGroup.get('info');
-            return command.run(client, interaction, targetManga);
+            return command.run(client, interaction, { bridgedManga: targetManga, bridgedTitle: title });
         }
     } else {
         const embed = new EmbedBuilder()
@@ -203,10 +203,8 @@ exports.run = async(client, interaction, bridgedTitle) => {
         const filter = async res => {
             if (res.customId !== 'showinfobtn') return false;
             if (res.user.id !== interaction.user.id) {
-                res.followUp({
-                    embeds: [{
-                        description: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`
-                    }],
+                res.reply({
+                    content: `This button are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
                     ephemeral: true
                 });
                 return false;
@@ -239,7 +237,14 @@ exports.run = async(client, interaction, bridgedTitle) => {
 
             const mangaModalResult = await res.awaitModalSubmit({
                 filter: (i) => {
-                    return i.customId === 'info' && i.user.id === interaction.user.id
+                    if (i.customId !== 'info' || i.user.id !== authorId) return false;
+                    else if (isNaN(i.fields.getTextInputValue('mangaNumber')) || Number(i.fields.getTextInputValue('mangaNumber')) > results.length || Number(i.fields.getTextInputValue('mangaNumber')) < 1) {
+                        i.reply({
+                            content: `You should enter a vaild number \`1 - ${results.length}\` <:hutaoWHEEZE:1085918596955394180>`,
+                            ephemeral: true
+                        })
+                        return false
+                    } else return true;
                 },
                 time: 15000
             }).catch(() => null);
@@ -248,17 +253,20 @@ exports.run = async(client, interaction, bridgedTitle) => {
                 collector.stop();
                 await mangaModalResult.deferUpdate();
                 const number = mangaModalResult.fields.getTextInputValue('mangaNumber');
-                const targetManga = results[number - 1];
+                const targetManga = results[Number(number) - 1];
                 const commandFile = client.commands.get('manga');
                 const command = commandFile.subCommandsGroup.get('info');
-                return command.run(client, interaction, targetManga);
+                return command.run(client, interaction, { bridgedManga: targetManga, bridgedTitle: title });
             };
         });
-        collector.on('end', async() => {
-            row.components.forEach(button => button.setDisabled(true));
-            interaction.editReply({
-                components: [row]
-            });
+        collector.on('end', async(collection, reason) => {
+            if (reason !== 'time') return;
+            else {
+                row.components.forEach(button => button.setDisabled(true));
+                interaction.editReply({
+                    components: [row]
+                });
+            };
         })
     }
 };
