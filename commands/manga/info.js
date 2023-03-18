@@ -88,9 +88,8 @@ exports.run = async (client, interaction, bridge) => {
         links:
             manga.links.availableLinks && manga.links.availableLinks.length
                 ? manga.links.availableLinks
-                      .map((link) => {
-                          return `[${linksTitle[link]}](${manga.links[link]})`;
-                      })
+                      .map((link) => Boolean(linksTitle[link]) ? `[${linksTitle[link]}](${manga.links[link]})` : null)
+                      .filter((link) => Boolean(link))
                       .join(", ")
                 : "???",
         description: manga.description || "No description provided",
