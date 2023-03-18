@@ -1,11 +1,14 @@
-const { SlashCommandSubcommandBuilder } = require('discord.js');
+const { SlashCommandSubcommandBuilder, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType, TextInputStyle, ModalBuilder, TextInputBuilder } = require('discord.js');
 const iso = require('iso-639-1');
 const axios = require('axios');
 const { genre, theme, format } = require('../../assets/tagList.json');
 const similarityChecker = require("string-similarity");
+const { flag } = require('../../handler/countryToEmoji.js');
+const { paginatedMangaSearch } = require('../../handler/Util.js');
 
-exports.run = async(client, interaction) => {
-    const title = interaction.options.getString('title');
+
+exports.run = async(client, interaction, bridgedTitle) => {
+    const title = bridgedTitle ? bridgedTitle : interaction.options.getString('title');
     const authorOrArtist = interaction.options.getString('author');
     const includedGenre = interaction.options.getString('included-genre');
     const includedTheme = interaction.options.getString('included-theme');
@@ -20,7 +23,7 @@ exports.run = async(client, interaction) => {
     await interaction.deferReply();
 
     let options = {
-        limit: 20,
+        limit: 40,
     };
     if (title) options.title = title;
     if (authorOrArtist) options.authorOrArtist = authorOrArtist;
@@ -30,7 +33,7 @@ exports.run = async(client, interaction) => {
     if (translatedLanguage) {
         const lang = iso.getCode(translatedLanguage.toLowerCase());
         if (!iso.validate(lang)) {
-            interaction.editReply({ content: `The language you have entered (\`${translatedLanguage}\`) is invalid. Please check your spelling and try again <:Sapo:1078667608196391034>`, ephemeral: true });
+            interaction.editReply({ content: `The language you have entered (\`${translatedLanguage}\`) is invalid. Please check your spelling and try again <:hutaoWHEEZE:1085918596955394180> (You should choose one of those recommended tag suggestion as you type because they are avaliable.)`, ephemeral: true });
             return;
         };
         options.availableTranslatedLanguage = [lang];
@@ -39,7 +42,7 @@ exports.run = async(client, interaction) => {
     if (originalLanguage) {
         const lang = iso.getCode(originalLanguage.toLowerCase());
         if (!iso.validate(lang)) {
-            interaction.editReply({ content: `The language you have entered (\`${originalLanguage}\`) is invalid. Please check your spelling and try again <:Sapo:1078667608196391034>`, ephemeral: true });
+            interaction.editReply({ content: `The language you have entered (\`${originalLanguage}\`) is invalid. Please check your spelling and try again <:hutaoWHEEZE:1085918596955394180> (You should choose one of those recommended tag suggestion as you type because they are avaliable.)`, ephemeral: true });
             return;
         };
         options.originalLanguage = [lang];
@@ -84,7 +87,180 @@ exports.run = async(client, interaction) => {
         interaction.editReply({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${results.message}\``, ephemeral: true });
         return;
     };
-    interaction.editReply({ content: `Found ${results.length} results.\nResults: ${results.map(res => res.title).join("\n")}`, ephemeral: true });
+
+    if (results.length === 0) {
+        return interaction.editReply({ content: 'No results was found <:Sapo:1078667608196391034>' });
+    };
+
+    const resultFiltered = results.map((res, index) => {
+        return {
+            title: res.title,
+            originalLanguage: res.originalLanguage,
+            status: res.status,
+            id: res.id,
+            index: index + 1
+        }
+    })
+
+
+    if (results.length > 10) {
+        const resLength = results.length;
+        const arrSplitted = [];
+        while (resultFiltered.length) {
+            const toAdd = resultFiltered.splice(0, resultFiltered.length >= 10 ? 10 : resultFiltered.length);
+            arrSplitted.push(toAdd);
+        };
+        const arrEmbeds = arrSplitted.map((arr, index) => {
+            const embed = new EmbedBuilder()
+            .setThumbnail('https://i.imgur.com/uMW1HWw.png')
+            .setColor('FF6740')
+            .setTitle(`Found ${resLength} ${resLength === 1 ? 'result' : 'results'}`)
+            .setDescription(arr.map((res) => {
+                let countryFlag
+                if (!res.originalLanguage) countryFlag = '';
+                else {
+                    const fullName = iso.getName(res.originalLanguage);
+                    const emojiFlag = flag(fullName);
+                    if (emojiFlag) countryFlag = emojiFlag;
+                    else countryFlag = `\`${res.originalLanguage}\``;
+                }
+                return `**${res.index}** • ${countryFlag} ${res.title} **(${res.status})**`
+            }).join("\n"));
+            return embed;
+        });
+        const row = new ActionRowBuilder()
+        .addComponents([
+            new ButtonBuilder()
+            .setLabel('Previous')
+            .setCustomId("previousbtn")
+            .setEmoji('⬅️')
+            .setStyle(2),
+            new ButtonBuilder()
+            .setLabel('Jump to')
+            .setCustomId('jumpbtn')
+            .setEmoji('↗️')
+            .setStyle(2),
+            new ButtonBuilder()
+            .setLabel('Next')
+            .setCustomId("nextbtn")
+            .setEmoji('➡️')
+            .setStyle(2)
+        ]);
+        const row2 = new ActionRowBuilder()
+        .addComponents([
+            new ButtonBuilder()
+            .setLabel('Show more info')
+            .setCustomId("showinfobtn")
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('🔎')
+        ])
+    
+        const msg = await interaction.editReply({
+            embeds: [arrEmbeds[0]],
+            components: [row, row2],
+            content: `Page 1 of ${arrEmbeds.length}`,
+            fetchReply: true
+        });
+
+        const filter = async res => {
+            if (res.user.id !== interaction.user.id) {
+                res.followUp({
+                    embeds: [{
+                        description: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`
+                    }],
+                    ephemeral: true
+                });
+                return false;
+            } else return true
+        };
+        const result = await paginatedMangaSearch(interaction, arrEmbeds, msg, [row, row2], filter, interaction.user.id, resLength);
+        if (result.reason !== 'time') {
+            const targetManga = results[result.value - 1];
+            const commandFile = client.commands.get('manga');
+            const command = commandFile.subCommandsGroup.get('info');
+            return command.run(client, interaction, targetManga);
+        }
+    } else {
+        const embed = new EmbedBuilder()
+        .setThumbnail('https://i.imgur.com/uMW1HWw.png')
+        .setColor('FF6740')
+        .setTitle(`Found ${results.length} ${results.length === 1 ? 'result' : 'results'}`)
+        .setDescription(results.map((res, index) => {
+            let countryFlag
+            if (!res.originalLanguage) countryFlag = '';
+            else countryFlag = Boolean(flag(iso.getName(res.originalLanguage))) ? flag(iso.getName(res.originalLanguage)) : `\`${res.originalLanguage}\``;
+            return `**${index + 1}** • ${countryFlag} ${res.title} **(${res.status})**`
+        }).join("\n"));
+        const row = new ActionRowBuilder()
+        .addComponents([
+            new ButtonBuilder()
+            .setLabel('Show more info')
+            .setCustomId("showinfobtn")
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('🔎')
+        ]);
+
+        const filter = async res => {
+            if (res.customId !== 'showinfobtn') return false;
+            if (res.user.id !== interaction.user.id) {
+                res.followUp({
+                    embeds: [{
+                        description: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`
+                    }],
+                    ephemeral: true
+                });
+                return false;
+            } else return true
+        };
+
+
+        const msg = await interaction.editReply({ embeds: [embed], fetchReply: true, components: [row] });
+
+        const collector = msg.createMessageComponentCollector({
+            componentType: ComponentType.Button,
+            filter,
+            time: 60000
+        });
+
+        collector.on('collect', async(res) => {
+            const modal1 = new ModalBuilder()
+            .setCustomId('info')
+            .setTitle('Display manga info');
+            const input1 = new TextInputBuilder()
+            .setMinLength(1)
+            .setRequired(true)
+            .setCustomId('mangaNumber')
+            .setLabel(`Which manga would you like to show more info?`)
+            .setPlaceholder(`1 - ${results.length}`)
+            .setStyle(TextInputStyle.Short);
+            const row1 = new ActionRowBuilder().addComponents(input1);
+            modal1.addComponents(row1);
+            await res.showModal(modal1);
+
+            const mangaModalResult = await res.awaitModalSubmit({
+                filter: (i) => {
+                    return i.customId === 'info' && i.user.id === interaction.user.id
+                },
+                time: 15000
+            }).catch(() => null);
+            if (!mangaModalResult) return;
+            else {
+                collector.stop();
+                await mangaModalResult.deferUpdate();
+                const number = mangaModalResult.fields.getTextInputValue('mangaNumber');
+                const targetManga = results[number - 1];
+                const commandFile = client.commands.get('manga');
+                const command = commandFile.subCommandsGroup.get('info');
+                return command.run(client, interaction, targetManga);
+            };
+        });
+        collector.on('end', async() => {
+            row.components.forEach(button => button.setDisabled(true));
+            interaction.editReply({
+                components: [row]
+            });
+        })
+    }
 };
 
 exports.autocomplete = async(client, interaction) => {
@@ -102,7 +278,12 @@ exports.autocomplete = async(client, interaction) => {
         const matches = similarityChecker.findBestMatch(value, format);
         const sorted = matches.ratings.sort((a, b) => b.rating - a.rating).splice(0, 10);
         return interaction.respond(sorted.map(res => ({ name: res.target, value: res.target })));
-    };
+    } else if (name === 'original-language' || name === 'translated-language') {
+        const listLangs = iso.getAllNames();
+        const matches = similarityChecker.findBestMatch(value, listLangs);
+        const sorted = matches.ratings.sort((a, b) => b.rating - a.rating).splice(0, 10);
+        return interaction.respond(sorted.map(res => ({ name: res.target, value: res.target })));
+    }
 }
 
 exports.info = {
