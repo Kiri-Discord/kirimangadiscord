@@ -237,7 +237,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
 
             const mangaModalResult = await res.awaitModalSubmit({
                 filter: (i) => {
-                    if (i.customId !== 'info' || i.user.id !== authorId) return false;
+                    if (i.customId !== 'info' || i.user.id !== interaction.user.id) return false;
                     else if (isNaN(i.fields.getTextInputValue('mangaNumber')) || Number(i.fields.getTextInputValue('mangaNumber')) > results.length || Number(i.fields.getTextInputValue('mangaNumber')) < 1) {
                         i.reply({
                             content: `You should enter a vaild number \`1 - ${results.length}\` <:hutaoWHEEZE:1085918596955394180>`,

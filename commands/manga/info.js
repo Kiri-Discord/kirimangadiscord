@@ -7,6 +7,8 @@ const {
     ButtonStyle
 } = require("discord.js");
 
+const readingListDatabase = require("../../database/readingList");
+
 const linksTitle = {
     al: "AniList",
     ap: "AnimePlanet",
@@ -183,20 +185,26 @@ exports.run = async (client, interaction, bridge) => {
     } else {
         const row = new ActionRowBuilder().addComponents([
             new ButtonBuilder()
+            .setLabel("Add to reading list")
+            .setCustomId("addreadingbtn")
+            .setStyle(ButtonStyle.Success)
+            .setEmoji("📚"),
+            new ButtonBuilder()
                 .setLabel("Search again with query")
                 .setCustomId("showmorebtn")
                 .setStyle(ButtonStyle.Success)
                 .setEmoji("🔎"),
         ]);
         const filter = async res => {
-            if (res.customId !== 'showmorebtn') return false;
-            if (res.user.id !== interaction.user.id) {
-                res.reply({
-                    content: `This buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
-                    ephemeral: true
-                });
-                return false;
-            } else return true
+            if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn') {
+                if (res.user.id !== interaction.user.id) {
+                    res.reply({
+                        content: `This buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
+                        ephemeral: true
+                    });
+                    return false;
+                } else return true;
+            } else return false;
         };
         const msg = await interaction.editReply({
             embeds: [embed],
@@ -210,14 +218,30 @@ exports.run = async (client, interaction, bridge) => {
             time: 60000
         });
         collector.on('collect', async(res) => {
-            await res.deferUpdate();
-            collector.stop();
-            const commandFile = client.commands.get('manga');
-            const command = commandFile.subCommandsGroup.get('search');
-            return command.run(client, interaction, query);
+            if (res.customId === 'showmorebtn') {
+                await res.deferUpdate();
+                collector.stop();
+                const commandFile = client.commands.get('manga');
+                const command = commandFile.subCommandsGroup.get('search');
+                return command.run(client, interaction, query);
+            } else if (res.customId === 'addreadingbtn') {
+                await res.deferUpdate();
+                collector.stop();
+                await readingListDatabase.findOneAndUpdate({
+                    mangaId: manga.id,
+                    userId: interaction.user.id
+                }, {
+                    mangaId: manga.id,
+                    userId: interaction.user.id
+                }, {
+                    upsert: true,
+                    new: true,
+                })
+                return res.followUp({ content: `Successfully added **${manga.title}** to your reading list 📖` })
+            };
         });
         collector.on('end', async(collection, reason) => {
-            if (reason !== 'time') return;
+            if (reason !== 'time' && !collection.filter(i => i.customId === 'addreadingbtn').size) return;
             else {
                 row.components.forEach(button => button.setDisabled(true));
                 interaction.editReply({
@@ -239,7 +263,7 @@ exports.info = {
             option
                 .setName("query")
                 .setDescription(
-                    "The title of the manga to look for, or the MangaDex ID of the manga."
+                    "The title of the manga to look for."
                 )
                 .setRequired(true)
         ),
