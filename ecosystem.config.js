@@ -1,7 +1,7 @@
 module.exports = {
     apps: [{
         script: './index.js',
-        name: 'Kaiwa',
+        name: 'Kiri',
         cwd: './',
         exp_backoff_restart_delay: 500
     }],

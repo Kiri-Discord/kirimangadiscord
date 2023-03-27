@@ -60,6 +60,20 @@ module.exports = class Manga {
         }
         return results;
     }
+    async getRandomManga() {
+        const results = await MFA.Manga.getRandom(undefined, true).catch((err) => {
+            this.client.logger.error(err);
+            return {
+                error: true,
+                message: err.message,
+            };
+        });
+        if (!results) return {
+            error: true,
+            message: "No results found.",
+        }
+        return results;
+    }
     async resumeReading({ sessionId, mangaId }, interaction) {
         let session;
         if (sessionId) {
