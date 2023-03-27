@@ -2,6 +2,7 @@ const { Client, Collection } = require("discord.js");
 const Manga = require("./Manga");
 const winston = require('winston');
 require("winston-daily-rotate-file");
+const languages = require("@cospired/i18n-iso-languages");
 
 const errorStackFormat = winston.format((info) => {
     if (info instanceof Error) {
@@ -17,9 +18,10 @@ const errorStackFormat = winston.format((info) => {
 module.exports = class Bot extends Client {
         constructor(options) {
                 super(options);
+                this.languageHandler = languages;
                 this.commands = new Collection();
+                this.buttonCommands = new Collection();
                 this.manga = new Manga(this);
-                this.mangadexapi
                 this.helps = new Collection();
                 this.deletedChannels = new WeakSet();
                 this.logger = winston.createLogger({

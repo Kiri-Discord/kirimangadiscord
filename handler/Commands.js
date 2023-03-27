@@ -2,14 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { Collection } = require("discord.js");
 
-const Heatsync = require("heatsync");
-
-module.exports = async(client) => {
+module.exports = async(client, sync) => {
     client.logger.info(`Initilizing commands files and folders....`);
-
-    const sync = new Heatsync();
-    sync.events.on("error", client.logger.error);
-    sync.events.on("any", (file) => client.logger.info(`${file} was changed`));
 
     const files = await fs.promises.readdir('./commands/');
     const individualCmd = files.filter(file => path.extname(file) === '.js');

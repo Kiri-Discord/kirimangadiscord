@@ -5,7 +5,7 @@ module.exports = async (client, interaction) => {
         const commandFile = client.commands.get(interaction.commandName);
         if (!commandFile && !interaction.isAutocomplete()) {
             return interaction.reply({
-                content: `:grey_question: That slash command is probably outdated! You can try again in an hour as Discord are updating the database across all servers (including yours!)`,
+                content: `:grey_question: That slash command is probably outdated! This will dissapear in an hour as Discord are updating our command database across all servers (including yours!)`,
                 ephemeral: true,
             });
         }
@@ -80,5 +80,11 @@ module.exports = async (client, interaction) => {
                     ephemeral: true,
                 });
         }
+    } else if (interaction.isButton()) {
+        const commandFile = client.buttonCommands.get(interaction.customId);
+        if (!commandFile) return;
+        return commandFile.run(client, interaction).catch((error) => {
+            client.logger.error(error);
+        });
     }
 };

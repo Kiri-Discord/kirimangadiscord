@@ -8,7 +8,8 @@ const reqString = {
 const Schema = mongoose.Schema({
     mangaId: reqString,
     userId: reqString,
-    progress: String
+    progress: String,
+    readingLanguage: String,
 });
 
 module.exports = mongoose.model("readingList", Schema, "readingList");

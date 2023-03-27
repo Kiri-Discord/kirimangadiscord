@@ -119,7 +119,8 @@ exports.run = async(client, interaction, bridgedTitle) => {
                 let countryFlag
                 if (!res.originalLanguage) countryFlag = '';
                 else {
-                    const fullName = iso.getName(res.originalLanguage);
+                    const fullName = client.languageHandler.getName(res.originalLanguage, "en")
+                    // const fullName = iso.getName(res.originalLanguage);
                     const emojiFlag = flag(fullName);
                     if (emojiFlag) countryFlag = emojiFlag;
                     else countryFlag = `\`${res.originalLanguage}\``;
@@ -134,7 +135,8 @@ exports.run = async(client, interaction, bridgedTitle) => {
             .setLabel('Previous')
             .setCustomId("previousbtn")
             .setEmoji('⬅️')
-            .setStyle(2),
+            .setStyle(2)
+            .setDisabled(true),
             new ButtonBuilder()
             .setLabel('Jump to')
             .setCustomId('jumpbtn')
@@ -153,7 +155,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
             .setCustomId("showinfobtn")
             .setStyle(ButtonStyle.Success)
             .setEmoji('🔎')
-        ])
+        ]);
     
         const msg = await interaction.editReply({
             embeds: [arrEmbeds[0]],
@@ -165,9 +167,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
         const filter = async res => {
             if (res.user.id !== interaction.user.id) {
                 res.reply({
-                    embeds: [{
-                        description: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`
-                    }],
+                    content: `Those buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
                     ephemeral: true
                 });
                 return false;
@@ -188,7 +188,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
         .setDescription(results.map((res, index) => {
             let countryFlag
             if (!res.originalLanguage) countryFlag = '';
-            else countryFlag = Boolean(flag(iso.getName(res.originalLanguage))) ? flag(iso.getName(res.originalLanguage)) : `\`${res.originalLanguage}\``;
+            else countryFlag = Boolean(flag(client.languageHandler.getName(res.originalLanguage, "en"))) ? flag(client.languageHandler.getName(res.originalLanguage, "en")) : `\`${res.originalLanguage}\``;
             return `**${index + 1}** • ${countryFlag} ${res.title} **(${res.status})**`
         }).join("\n"));
         const row = new ActionRowBuilder()
@@ -248,8 +248,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
                 },
                 time: 15000
             }).catch(() => null);
-            if (!mangaModalResult) return;
-            else {
+            if (mangaModalResult) {
                 collector.stop();
                 await mangaModalResult.deferUpdate();
                 const number = mangaModalResult.fields.getTextInputValue('mangaNumber');
@@ -257,7 +256,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
                 const commandFile = client.commands.get('manga');
                 const command = commandFile.subCommandsGroup.get('info');
                 return command.run(client, interaction, { bridgedManga: targetManga, bridgedTitle: title });
-            };
+            }
         });
         collector.on('end', async(collection, reason) => {
             if (reason !== 'time') return;

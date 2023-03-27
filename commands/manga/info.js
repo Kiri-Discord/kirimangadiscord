@@ -175,81 +175,119 @@ exports.run = async (client, interaction, bridge) => {
             },
         ]);
     if (cover && cover.imageSource) embed.setThumbnail(cover.imageSource);
-    if (!query) {
-        return interaction.editReply({
-            components: [],
+    if (bridge?.followUp) {
+        return interaction.followUp({
             embeds: [embed],
-            fetchReply: true,
-            content: Boolean(bridge) ? "Here you go!" : null
+            content: "Here you go!",
+            ephemeral: true,
         });
-    } else {
-        const row = new ActionRowBuilder().addComponents([
-            new ButtonBuilder()
-            .setLabel("Add to reading list")
-            .setCustomId("addreadingbtn")
-            .setStyle(ButtonStyle.Success)
-            .setEmoji("📚"),
-            new ButtonBuilder()
-                .setLabel("Search again with query")
-                .setCustomId("showmorebtn")
-                .setStyle(ButtonStyle.Success)
-                .setEmoji("🔎"),
-        ]);
-        const filter = async res => {
-            if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn') {
-                if (res.user.id !== interaction.user.id) {
-                    res.reply({
-                        content: `This buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
-                        ephemeral: true
-                    });
-                    return false;
-                } else return true;
-            } else return false;
-        };
-        const msg = await interaction.editReply({
-            embeds: [embed],
-            components: [row],
-            fetchReply: true,
-            content: Boolean(bridge) ? "Here you go!" : null
-        });
-        const collector = msg.createMessageComponentCollector({
-            componentType: ComponentType.Button,
-            filter,
-            time: 60000
-        });
-        collector.on('collect', async(res) => {
-            if (res.customId === 'showmorebtn') {
-                await res.deferUpdate();
-                collector.stop();
-                const commandFile = client.commands.get('manga');
-                const command = commandFile.subCommandsGroup.get('search');
-                return command.run(client, interaction, query);
-            } else if (res.customId === 'addreadingbtn') {
-                await res.deferUpdate();
-                collector.stop();
-                await readingListDatabase.findOneAndUpdate({
-                    mangaId: manga.id,
-                    userId: interaction.user.id
-                }, {
-                    mangaId: manga.id,
-                    userId: interaction.user.id
-                }, {
-                    upsert: true,
-                    new: true,
-                })
-                return res.followUp({ content: `Successfully added **${manga.title}** to your reading list 📖` })
-            };
-        });
-        collector.on('end', async(collection, reason) => {
-            if (reason !== 'time' && !collection.filter(i => i.customId === 'addreadingbtn').size) return;
-            else {
-                row.components.forEach(button => button.setDisabled(true));
-                interaction.editReply({
-                    components: [row]
+    };
+    const database = await readingListDatabase.findOne({
+        mangaId: manga.id,
+        userId: interaction.user.id
+    });
+    const row = new ActionRowBuilder().addComponents([
+        new ButtonBuilder()
+        .setLabel("Add to reading list")
+        .setCustomId("addreadingbtn")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji("📚")
+        .setDisabled(Boolean(database)),
+        new ButtonBuilder()
+        .setLabel("Remove from reading list")
+        .setCustomId("removereadingbtn")
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji("📚")
+        .setDisabled(!Boolean(database)),
+        new ButtonBuilder()
+        .setLabel("Search again with query")
+        .setCustomId("showmorebtn")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji("🔎")
+        .setDisabled(!query),
+        new ButtonBuilder()
+        .setLabel('Read')
+        .setCustomId("startreadinginfobtn")
+        .setStyle(ButtonStyle.Success)
+        .setEmoji('📖'),
+    ]);
+    const filter = async res => {
+        if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn' || res.customId === 'startreadinginfobtn' || res.customId === 'removereadingbtn') {
+            if (res.user.id !== interaction.user.id) {
+                res.reply({
+                    content: `This buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
+                    ephemeral: true
                 });
-            };
-        })
-    }
+                return false;
+            } else return true;
+        } else return false;
+    };
+    const msg = await interaction.editReply({
+        embeds: [embed],
+        components: [row],
+        fetchReply: true,
+        content: Boolean(bridge) ? "Here you go!" : null
+    });
+    const collector = msg.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        filter,
+        time: 60000
+    });
+    collector.on('collect', async(res) => {
+        if (res.customId === 'showmorebtn') {
+            await res.deferUpdate();
+            collector.stop();
+            const commandFile = client.commands.get('manga');
+            const command = commandFile.subCommandsGroup.get('search');
+            return command.run(client, interaction, query);
+        } else if (res.customId === 'addreadingbtn') {
+            await res.deferUpdate();
+            await readingListDatabase.findOneAndUpdate({
+                mangaId: manga.id,
+                userId: interaction.user.id
+            }, {
+                mangaId: manga.id,
+                userId: interaction.user.id
+            }, {
+                upsert: true,
+                new: true,
+            });
+            row.components[0].setDisabled(true);
+            row.components[1].setDisabled(false);
+            await res.editReply({
+                components: [row],
+            })
+            return res.followUp({ content: `Added **${manga.title}** to your reading list 📖`, ephemeral: true })
+        } else if (res.customId === 'startreadinginfobtn') {
+            collector.stop();
+            await res.deferUpdate();
+            return client.manga.handleRead(manga.id, interaction);
+        } else if (res.customId === 'removereadingbtn') {
+            await res.deferUpdate();
+            await readingListDatabase.findOneAndDelete({
+                mangaId: manga.id,
+                userId: interaction.user.id
+            });
+
+            row.components[0].setDisabled(false);
+            row.components[1].setDisabled(true);
+
+            await res.editReply({
+                components: [row],
+            })
+            return res.followUp({ content: `Removed **${manga.title}** from your reading list ❌`, ephemeral: true })
+        };
+    });
+    collector.on('end', async(collection, reason) => {
+        if (reason !== 'time') return;
+        else {
+            row.components.forEach(button => button.setDisabled(true));
+            interaction.editReply({
+                components: [row]
+            });
+        };
+    });
+
 };
 
 exports.info = {
