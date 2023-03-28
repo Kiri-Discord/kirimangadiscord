@@ -11,7 +11,7 @@ exports.run = async(client, interaction) => {
 
     **Q: Can this message be safely deleted? Will my progress be gone?**
 
-    A: Yes, this message can be safely deleted (both intentionally and unintentionally). If you want to recover a reading session, you can use the \`/session recover\` command to create a new message with your reading session.
+    A: Yes, this message can be safely deleted (both intentionally and unintentionally). If you want to recover a reading session, you can use the \`/session resume\` command to create a new message with your reading session.
 
     **Q: Can I allow another user to use my reading session as well?**
 
@@ -23,7 +23,7 @@ exports.run = async(client, interaction) => {
 
     **Q: What is the difference between reading sessions and reading list?**
 
-    A: Reading sessions are used to keep track of your reading progress. Reading list is used to keep track of the manga you want to read. You can add manga to your reading list on the informaton page of a manga.
+    A: Reading sessions are used to keep track of your reading progress. Reading list is used to keep track of the manga you want to read. You can add manga to your reading list on the information page of a manga.
     `);
     
     return interaction.reply({ embeds: [embed], ephemeral: true })

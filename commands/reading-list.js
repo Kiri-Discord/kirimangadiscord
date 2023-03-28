@@ -47,35 +47,6 @@ exports.run = async (client, interaction) => {
             readingLanguage: mangaIds.find((m) => m.id === manga.id).readingLanguage,
         };
     })
-
-    // if (mangaIds.length > 100) {
-    //     const mangaChunks = [];
-    //     while (mangaIds.length) {
-    //         const toAdd = mangaIds.splice(0, mangaIds.length >= 100 ? 100 : mangaIds.length);
-    //         mangaChunks.push(toAdd);
-    //     };
-    //     const fetchedMangas = await Promise.all(mangaChunks.map(async(chunk) => {
-    //         const fetched = await client.manga.search({
-    //             ids: chunk.map((manga) => manga.id),
-    //             limit: Infinity
-    //         });
-    //         return fetched.map((manga) => {
-    //             return {
-    //                 ...manga,
-    //                 progress: mangaIds.find((m) => m.id === manga.id).progress,
-    //                 readingLanguage: mangaIds.find((m) => m.id === manga.id).readingLanguage,
-    //             }
-    //         })
-    //     })).then((mangas) => mangas.flat(1).map((manga, index) => {
-    //         return {
-    //             ...manga,
-    //             index
-    //         }
-    //     }));
-    //     mangasArray = fetchedMangas;
-    // } else {
-
-    // };
     const fetchedMangas = mangasArray.map((manga) => {
         return {
             title: manga.localizedTitle[manga.localizedTitle.availableLocales[0]],
