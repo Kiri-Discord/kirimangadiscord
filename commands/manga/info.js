@@ -102,7 +102,7 @@ exports.run = async (client, interaction, bridge) => {
             ? `Chapter ${manga.lastChapter}`
             : "???",
         year: manga.year || "???",
-        rating: stats && stats.rating ? `${stats.rating.average} ⭐` : "???",
+        rating: stats?.rating?.average ? `${stats.rating.average} ⭐` : "???",
     };
 
     const embed = new EmbedBuilder()

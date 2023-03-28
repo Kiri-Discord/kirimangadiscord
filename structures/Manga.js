@@ -162,7 +162,7 @@ module.exports = class Manga {
             ]);
 
             const embed = new EmbedBuilder()
-            .setDescription(`**Chapter ${fetchedChapter.chapter || 0}: ${Boolean(fetchedChapter.title) ? fetchedChapter.title : 'Oneshot'}**\n\nThis chapter is external, meaning that it is not hosted on our servers. You can read it here: ${fetchedChapter.externalUrl}`)
+            .setDescription(`**Chapter ${fetchedChapter.chapter || 0}${Boolean(fetchedChapter.title) ? `: ${fetchedChapter.title}` : ''}**\n\nThis chapter is external, meaning that it is not hosted on our servers. You can read it here: ${fetchedChapter.externalUrl}`)
             .setFooter({ text: `Uploader: ${uploader ? uploader.username : 'Unknown'} | Translated by: ${groupNames.length ? groupNames.join(", ") : 'Unknown'}` });
 
             const msg = await interaction.editReply({ embeds: [embed], components: [row, row1], content: `Page 1 of 1 - <@${interaction.user.id}>'s reading session` });
@@ -236,7 +236,7 @@ module.exports = class Manga {
             ]);
     
             const embed = new EmbedBuilder()
-            .setDescription(`**Chapter ${currentChapter}: ${Boolean(fetchedChapter.title) ? fetchedChapter.title : 'Oneshot'}**`)
+            .setDescription(`**Chapter ${currentChapter}${Boolean(fetchedChapter.title) ? `: ${fetchedChapter.title}` : ''}**`)
             .setFooter({ text: `Uploader: ${uploader ? uploader.username : 'Unknown'} | Translated by: ${groupNames.length ? groupNames.join(", ") : 'Unknown'}` })
             .setImage(pages[newPage -  1]);
         
@@ -311,7 +311,7 @@ module.exports = class Manga {
             ]);
 
             const embed = new EmbedBuilder()
-            .setDescription(`**Chapter ${chapter.chapter || 0}: ${Boolean(chapter.title) ? chapter.title : 'Oneshot'}**\n\nThis chapter is external, meaning that it is not hosted on our servers. You can read it here: ${chapter.externalUrl}`)
+            .setDescription(`**Chapter ${chapter.chapter || 0}${Boolean(chapter.title) ? `: ${chapter.title}` : ''}**\n\nThis chapter is external, meaning that it is not hosted on our servers. You can read it here: ${chapter.externalUrl}`)
             .setFooter({ text: `Uploader: ${uploader ? uploader.username : 'Unknown'} | Translated by: ${groupNames.length ? groupNames.join(", ") : 'Unknown'}` });
 
             const msg = await interaction.editReply({ embeds: [embed], components: [row, row1], content: `Page 1 of 1 - <@${interaction.user.id}>'s reading session` });
@@ -429,7 +429,7 @@ module.exports = class Manga {
             
     
             const embed = new EmbedBuilder()
-            .setDescription(`**Chapter ${chapter.chapter || 0}: ${Boolean(chapter.title) ? chapter.title : 'Oneshot'}**`)
+            .setDescription(`**Chapter ${chapter.chapter || 0}${Boolean(chapter.title) ? `: ${chapter.title}` : ''}**`)
             .setFooter({ text: `Uploader: ${uploader ? uploader.username : 'Unknown'} | Translated by: ${groupNames.length ? groupNames.join(", ") : 'Unknown'}` })
             .setImage(pages[0]);
     
@@ -579,7 +579,7 @@ module.exports = class Manga {
             const fetchedChaptersList = chaptersList.map((chapter) => {
                 return {
                     chapter: chapter.chapter || 0,
-                    title: chapter.title || "Oneshot",
+                    title: chapter.title,
                     isExternal : chapter.isExternal,
                     index: chapter.index,
                     externalUrl: chapter.externalUrl
@@ -597,7 +597,7 @@ module.exports = class Manga {
                 .setURL(`https://mangadex.org/title/${manga.id}`)
                 .setTitle(`${manga.title} - ${this.client.languageHandler.getName(chaptersList[0].translatedLanguage, "en") ? this.client.languageHandler.getName(chaptersList[0].translatedLanguage, "en") : chaptersList[0].translatedLanguage}`)
                 .setDescription(arr.map((res) => {
-                    return `**${res.index + 1}** • Chapter ${res.chapter}: ${res.title} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
+                    return `**${res.index + 1}** • Chapter ${res.chapter}${res.title ? `: ${res.title}` : ''} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
                 }).join("\n"));
                 return embed;
             });
@@ -605,7 +605,7 @@ module.exports = class Manga {
             const fetchedChaptersList = chaptersList.map((chapter) => {
                 return {
                     chapter: chapter.chapter || 0,
-                    title: chapter.title || "Oneshot",
+                    title: chapter.title,
                     isExternal : chapter.isExternal,
                     index: chapter.index,
                     externalUrl: chapter.externalUrl
@@ -616,7 +616,7 @@ module.exports = class Manga {
                 .setURL(`https://mangadex.org/title/${manga.id}`)
                 .setTitle(`${manga.title} - ${this.client.languageHandler.getName(chaptersList[0].translatedLanguage, "en") ? this.client.languageHandler.getName(chaptersList[0].translatedLanguage, "en") : chaptersList[0].translatedLanguage}`)
                 .setDescription(fetchedChaptersList.map((res) => {
-                    return `**${res.index + 1}** • Chapter ${res.chapter}: ${res.title} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
+                    return `**${res.index + 1}** • Chapter ${res.chapter}${res.title ? `: ${res.title}` : ''} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
                 }).join("\n"))]
         };
 
@@ -684,7 +684,7 @@ module.exports = class Manga {
                             const fetchedChaptersList = newChaptersList.map((chapter) => {
                                 return {
                                     chapter: chapter.chapter || 0,
-                                    title: chapter.title || "Oneshot",
+                                    title: chapter.title,
                                     isExternal : chapter.isExternal,
                                     index: chapter.index,
                                     externalUrl: chapter.externalUrl
@@ -702,7 +702,7 @@ module.exports = class Manga {
                                 .setURL(`https://mangadex.org/title/${manga.id}`)
                                 .setTitle(`${manga.title} - ${this.client.languageHandler.getName(newChaptersList[0].translatedLanguage, "en") ? this.client.languageHandler.getName(newChaptersList[0].translatedLanguage, "en") : newChaptersList[0].translatedLanguage}`)
                                 .setDescription(arr.map((res) => {
-                                    return `**${res.index + 1}** • Chapter ${res.chapter}: ${res.title} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
+                                    return `**${res.index + 1}** • Chapter ${res.chapter}${res.title ? `: ${res.title}` : ''} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
                                 }).join("\n"));
                                 return embed;
                             });
@@ -710,7 +710,7 @@ module.exports = class Manga {
                             const fetchedChaptersList = chaptersList.map((chapter) => {
                                 return {
                                     chapter: chapter.chapter || 0,
-                                    title: chapter.title || "Oneshot",
+                                    title: chapter.title,
                                     isExternal : chapter.isExternal,
                                     index: chapter.index,
                                     externalUrl: chapter.externalUrl
@@ -721,7 +721,7 @@ module.exports = class Manga {
                                 .setURL(`https://mangadex.org/title/${manga.id}`)
                                 .setTitle(`${manga.title} - ${this.client.languageHandler.getName(newChaptersList[0].translatedLanguage, "en") ? this.client.languageHandler.getName(newChaptersList[0].translatedLanguage, "en") : newChaptersList[0].translatedLanguage}`)
                                 .setDescription(fetchedChaptersList.map((res) => {
-                                    return `**${res.index + 1}** • Chapter ${res.chapter}: ${res.title} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
+                                    return `**${res.index + 1}** • Chapter ${res.chapter}${res.title ? `: ${res.title}` : ''} ${res.isExternal ? `([External link](${res.externalUrl}))` : ''}`
                                 }).join("\n"))]
                         };
                         row.components[0].setDisabled(true);
