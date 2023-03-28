@@ -131,8 +131,8 @@ exports.run = async (client, interaction) => {
                 if (!res.readingLanguage) readingLanguage = '';
                 else {
                     const fullName = client.languageHandler.getName(res.readingLanguage, "en");
-                    if (fullName) readingLanguage = fullName;
-                    else readingLanguage = `\`${res.readingLanguage}\``;
+                    if (fullName) readingLanguage = `(${fullName})`;
+                    else readingLanguage = `(\`${res.readingLanguage}\`)`;
                 }
                 let countryFlag;
                 if (!res.originalLanguage) countryFlag = '';
@@ -142,7 +142,7 @@ exports.run = async (client, interaction) => {
                     if (emojiFlag) countryFlag = emojiFlag;
                     else countryFlag = `\`${res.originalLanguage}\``;
                 }
-                return `**${res.index + 1}** • ${countryFlag} ${res.title} **(${res.status})** - *${readingStatusString} (${readingLanguage})*`
+                return `**${res.index + 1}** • ${countryFlag} ${res.title} **(${res.status})** - *${readingStatusString} ${readingLanguage}*`
             }).join("\n"));
             return embed;
         });
@@ -176,8 +176,8 @@ exports.run = async (client, interaction) => {
             if (!res.readingLanguage) readingLanguage = '';
             else {
                 const fullName = client.languageHandler.getName(res.readingLanguage, "en");
-                if (fullName) readingLanguage = fullName;
-                else readingLanguage = `\`${res.readingLanguage}\``;
+                if (fullName) readingLanguage = `(${fullName})`;
+                else readingLanguage = `(\`${res.readingLanguage}\`)`;
             }
             let countryFlag;
             if (!res.originalLanguage) countryFlag = '';
@@ -187,7 +187,7 @@ exports.run = async (client, interaction) => {
                 if (emojiFlag) countryFlag = emojiFlag;
                 else countryFlag = `\`${res.originalLanguage}\``;
             }
-            return `**${res.index + 1}** • ${countryFlag} ${res.title} **(${res.status})** - *${readingStatusString} (${readingLanguage})*`
+            return `**${res.index + 1}** • ${countryFlag} ${res.title} **(${res.status})** - *${readingStatusString} ${readingLanguage}*`
         }).join("\n"));
 
         const msg = await interaction.editReply({ embeds: [embed], fetchReply: true, components: [row2] });

@@ -77,7 +77,7 @@ const { REST, Routes } = require('discord.js');
     try {
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
         const data = await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENTID, process.env.GUILDID), { body: commands },
+            Routes.applicationCommands(process.env.CLIENTID), { body: commands },
         );
 
         console.log(`Successfully reloaded ${data.length} application (/) commands.`);

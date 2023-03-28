@@ -667,7 +667,7 @@ module.exports = class Manga {
                     A: Due to the inconsistency of the language code type avaliable through the API, I might not understand some languages and therefore only showing you the language code. (this will be fixed in a future update)
                     `);
                     
-                    interaction.followUp({ embeds: [embed], ephemeral: true })
+                    res.reply({ embeds: [embed], ephemeral: true })
                     break;
                 case 'selectlangmenuchapter':
                     await res.deferUpdate();
