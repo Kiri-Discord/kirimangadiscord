@@ -100,7 +100,7 @@ exports.run = async(client, interaction) => {
     ]);
 
     const embed = new EmbedBuilder()
-    .setDescription(`**Chapter ${currentChapter}}${Boolean(fetchedChapter.title) ? `: ${fetchedChapter.title}` : ''}**`)
+    .setDescription(`**Chapter ${currentChapter}${Boolean(fetchedChapter.title) ? `: ${fetchedChapter.title}` : ''}**`)
     .setFooter({ text: `Uploader: ${uploader ? uploader.username : 'Unknown'} | Translated by: ${groupNames.length ? groupNames.join(", ") : 'Unknown'}` })
     .setImage(pages[newPage -  1]);
 
