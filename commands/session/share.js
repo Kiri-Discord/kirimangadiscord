@@ -21,6 +21,7 @@ exports.run = async(client, interaction) => {
     const allow = interaction.options.getBoolean('allow');
     if (allow === session.share) return interaction.editReply({ content: `That session has already been ${allow ? 'shared' : 'private'}!`, ephemeral : true });
     else {
+        session.lastUpdated = Date.now();
         session.share = allow;
         await session.save();
     }

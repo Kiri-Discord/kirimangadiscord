@@ -10,6 +10,11 @@ exports.run = async (client, interaction) => {
     });
     if (!session) return interaction.followUp({ content: 'This session is not avaliable to interact with anymore! <:Sapo:1078667608196391034>', ephemeral : true });
 
+    if (session.userId === interaction.user.id) {
+        session.lastUpdated = Date.now();
+        await session.save();
+    }
+
     const { mangaId } = session;
 
     const result = await client.manga.getManga(mangaId);

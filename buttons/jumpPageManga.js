@@ -158,6 +158,11 @@ exports.run = async (client, interaction) => {
             .setLabel('Show session ID')
             .setCustomId("copyidreadingbtn")
             .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+            .setLabel('Notify on/off')
+            .setCustomId("notifyreadingbtn")
+            .setStyle(ButtonStyle.Primary)
+            .setEmoji('🔔'),
         ]);
 
         const embed = new EmbedBuilder()
@@ -181,6 +186,7 @@ exports.run = async (client, interaction) => {
         };
 
         session.currentPage = newPage;
+        session.lastUpdated = Date.now();
 
         return session.save();
     };

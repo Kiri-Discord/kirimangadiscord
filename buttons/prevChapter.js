@@ -29,21 +29,25 @@ exports.run = async (client, interaction) => {
 
     const manga = await MFA.Manga.get(mangaId).catch((err) => {
         client.logger.error(err);
-        return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+        interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+        return null;
     });
+    if (!manga) return;
 
     let chapters = await MFA.Manga.getFeed(mangaId, { limit: Infinity, translatedLanguage: [translatedLanguage], order: {
         chapter: 'desc'
     }}).catch((err) => {
         client.logger.error(err);
-        return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+        interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+        return null;
     });
+    if (!chapters) return;
 
     if (!chapters.length) return interaction.followUp({ content: `This manga doesn't have any chapters avaliable to access right now <:Sapo:1078667608196391034>`, ephemeral : true });
 
     const filtered = chapters.filter((chapter) => Number(chapter.chapter) < Number(currentChapter));
     if (filtered.length === 0) return interaction.followUp({ content: 'You are already reading the first chapter of this manga <:hutaoWHEEZE:1085918596955394180>', ephemeral : true })
-    else return client.manga.handleInitialRead(filtered[0], manga, interaction);
+    else return client.manga.handleInitialRead({chapter: filtered[0]}, manga, interaction);
 }
 
 

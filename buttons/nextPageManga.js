@@ -97,6 +97,11 @@ exports.run = async(client, interaction) => {
         .setLabel('Show session ID')
         .setCustomId("copyidreadingbtn")
         .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+        .setLabel('Notify on/off')
+        .setCustomId("notifyreadingbtn")
+        .setStyle(ButtonStyle.Primary)
+        .setEmoji('🔔')
     ]);
 
     const embed = new EmbedBuilder()
@@ -107,6 +112,7 @@ exports.run = async(client, interaction) => {
     interaction.editReply({ embeds: [embed], components: [row, row1], content: `Page ${newPage} of ${pages.length} - <@${session.userId}>'s reading session` });
 
     session.currentPage = newPage;
+    session.lastUpdated = Date.now();
 
     return session.save();
 };

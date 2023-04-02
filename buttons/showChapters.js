@@ -22,6 +22,11 @@ exports.run = async (client, interaction) => {
             "This session is locked and only accessible by its owner only. Other users can interact once the owner of this session share it using \`/session share\`!",
         ephemeral: true,
     });
+
+    if (session.userId === userId) {
+        session.lastUpdated = Date.now();
+        await session.save();
+    }
     
 
     return client.manga.handleRead(session.mangaId, interaction, true);

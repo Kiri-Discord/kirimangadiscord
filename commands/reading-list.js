@@ -135,7 +135,25 @@ exports.run = async (client, interaction) => {
         const result = await paginatedMangaReadingList(interaction, arrEmbeds, msg, [row, row2], filter, interaction.user.id, resLength);
         if (result.reason !== 'time') {
             const targetManga = mangasArray[result.value - 1];
-            return client.manga.handleRead(targetManga.id, interaction);
+            const resolvedManga = await client.manga.getManga(targetManga.id);
+
+            if (resolvedManga.message === "No results found.") {
+                interaction.followUp({
+                    content: `That manga isn't avaliable to read anymore <:Sapo:1078667608196391034>`,
+                    ephemeral: true,
+                });
+                return;
+            }
+            if (resolvedManga.error) {
+                interaction.followUp({
+                    content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${resolvedManga.message}\``,
+                    ephemeral: true,
+                });
+                return;
+            };
+            const commandFile = client.commands.get('manga');
+            const command = commandFile.subCommandsGroup.get('info');
+            return command.run(client, interaction, { bridgedManga: resolvedManga });
         }
     } else {
         const embed = new EmbedBuilder()
@@ -213,7 +231,25 @@ exports.run = async (client, interaction) => {
                 await mangaModalResult.deferUpdate();
                 const number = mangaModalResult.fields.getTextInputValue('mangaNumberReadingList');
                 const targetManga = mangasArray[Number(number) - 1];
-                return client.manga.handleRead(targetManga.id, interaction);
+                const resolvedManga = await client.manga.getManga(targetManga.id);
+
+                if (resolvedManga.message === "No results found.") {
+                    interaction.followUp({
+                        content: `That manga isn't avaliable to read anymore <:Sapo:1078667608196391034>`,
+                        ephemeral: true,
+                    });
+                    return;
+                }
+                if (resolvedManga.error) {
+                    interaction.followUp({
+                        content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${resolvedManga.message}\``,
+                        ephemeral: true,
+                    });
+                    return;
+                };
+                const commandFile = client.commands.get('manga');
+                const command = commandFile.subCommandsGroup.get('info');
+                return command.run(client, interaction, { bridgedManga: resolvedManga });
             };
         });
         collector.on('end', async(collection, reason) => {
@@ -225,7 +261,12 @@ exports.run = async (client, interaction) => {
                 });
             };
         })
-    }
+    };
+    return readingListDatabase.updateMany({
+        userId: interaction.user.id,
+    }, {
+        lastUpdated: Date.now()
+    });
 };
 
 exports.info = {

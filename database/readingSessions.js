@@ -23,6 +23,10 @@ const Schema = mongoose.Schema({
     share: {
         type: Boolean,
         default: false,
+    },
+    lastUpdated: {
+        type: Number,
+        default: Date.now()
     }
 });
 

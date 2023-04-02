@@ -174,6 +174,11 @@ exports.run = async(client, interaction) => {
         })
 
     }
+    return readingSessionDatabase.updateMany({
+        userId: interaction.user.id,
+    }, {
+        lastUpdated: Date.now()
+    });
 };
 
 exports.info = {

@@ -81,10 +81,36 @@ module.exports = async (client, interaction) => {
                 });
         }
     } else if (interaction.isButton()) {
-        const commandFile = client.buttonCommands.get(interaction.customId);
-        if (!commandFile) return;
-        return commandFile.run(client, interaction).catch((error) => {
-            client.logger.error(error);
-        });
+        if (interaction.customId.startsWith("readfrom:")) {
+            await interaction.deferUpdate();
+            const chapterId = interaction.customId.split("readfrom:")[1];
+
+            const fetchedChapter = await client.manga.getChapter(chapterId);
+            if (fetchedChapter.message === "No results found.") {
+                interaction.followUp({
+                    content: `That chapter isn't avaliable to read anymore <:Sapo:1078667608196391034>`,
+                    ephemeral: true,
+                });
+                return;
+            }
+            if (fetchedChapter.error) {
+                interaction.followUp({
+                    content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${fetchedChapter.message}\``,
+                    ephemeral: true,
+                });
+                return;
+            };
+
+            const manga = await fetchedChapter.manga.resolve();
+
+            return client.manga.handleInitialRead({ chapter: fetchedChapter }, manga, interaction)
+
+        } else {
+            const commandFile = client.buttonCommands.get(interaction.customId);
+            if (!commandFile) return;
+            return commandFile.run(client, interaction).catch((error) => {
+                client.logger.error(error);
+            });
+        }
     }
 };

@@ -6,7 +6,7 @@ exports.run = async (client, interaction) => {
 
     await interaction.deferUpdate();
 
-    const session = await readingSessionDatabase.findOne({
+    const session = await readingSessionDatabase.findOneAndUpdate({
         messageId,
         userId,
     });

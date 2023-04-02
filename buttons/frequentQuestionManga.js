@@ -24,6 +24,10 @@ exports.run = async(client, interaction) => {
     **Q: What is the difference between reading sessions and reading list?**
 
     A: Reading sessions are used to keep track of your reading progress. Reading list is used to keep track of the manga you want to read. You can add manga to your reading list on the information page of a manga.
+
+    **Q: How does notification works?**
+
+    A: Notification is a feature that will notify you when a new chapter of a manga is released through DMs and can be changed by clicking the button below. You can only receive notifications for the translation group that you are currently reading. Changing notification settings also add the manga to your reading list.
     `);
     
     return interaction.reply({ embeds: [embed], ephemeral: true })

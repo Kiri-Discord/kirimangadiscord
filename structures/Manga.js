@@ -2,11 +2,139 @@ const MFA = require("mangadex-full-api");
 const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle, ButtonBuilder } = require('discord.js');
 const readingListDatabase = require('../database/readingList');
 const readingSessionDatabase = require('../database/readingSessions');
+const linksTitle = {
+    al: "AniList",
+    ap: "AnimePlanet",
+    bw: "BookWalker",
+    mu: "MangaUpdates",
+    nu: "NovelUpdates",
+    kt: "Kitsu",
+    amz: "Amazon",
+    ebj: "eBookJapan",
+    mal: "MyAnimeList",
+    raw: "Raw",
+    engtl: "English",
+    cdj: "CDJapan",
+};
+
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = class Manga {
     constructor(client) {
         this.client = client;
+    }
+    async generateEmbedInfo(manga) {
+        const stats = await manga.getStatistics();
+
+        const tags = manga.tags
+            .map((tag) => tag.localizedName.en)
+            .filter((tag) => Boolean(tag));
+        const altTitles = manga.localizedAltTitles.map(
+            (title) => Object.values(title)[0]
+        );
+
+        const authors = await MFA.resolveArray(manga.authors);
+        const artists = await MFA.resolveArray(manga.artists);
+    
+        const cover = await manga.mainCover.resolve();
+    
+        const mangaInfo = {
+            title: manga.title || "???",
+            url: `https://mangadex.org/title/${manga.id}`,
+            authors: authors.length
+                ? authors.map((author) => author.name).join(", ")
+                : "???",
+            artists: artists.length
+                ? artists.map((artist) => artist.name).join(", ")
+                : "???",
+            links:
+                manga.links.availableLinks && manga.links.availableLinks.length
+                    ? manga.links.availableLinks
+                          .map((link) => Boolean(linksTitle[link]) ? `[${linksTitle[link]}](${manga.links[link]})` : null)
+                          .filter((link) => Boolean(link))
+                          .join(", ")
+                    : "???",
+            description: manga.description || "No description provided",
+            localizedAltTitles: altTitles.length ? altTitles.join(", ") : "???",
+            tags: tags.length ? tags.join(", ") : "???",
+            status: manga.status || "???",
+            lastChapter: manga.lastChapter || "???",
+            year: String(manga.year) || "???",
+            rating: stats?.rating?.average ? `${stats.rating.average} ⭐` : "???",
+            cover: cover?.imageSource || null,
+        };
+    
+        const embed = new EmbedBuilder()
+            .setColor("FF6740")
+            .setURL(mangaInfo.url)
+            .setTitle(mangaInfo.title)
+            .setDescription(
+                mangaInfo.description.length > 4000
+                    ? mangaInfo.description.substring(0, 4000) + "..."
+                    : mangaInfo.description
+            )
+            .addFields([
+                {
+                    name: "✍ Authors",
+                    value:
+                        mangaInfo.authors.length > 1020
+                            ? mangaInfo.authors.substring(0, 1020) + "..."
+                            : mangaInfo.authors,
+                    inline: true,
+                },
+                {
+                    name: "🎨 Artists",
+                    value:
+                        mangaInfo.artists.length > 1020
+                            ? mangaInfo.artists.substring(0, 1020) + "..."
+                            : mangaInfo.artists,
+                    inline: true,
+                },
+                {
+                    name: "🧨 Publication Year",
+                    value: mangaInfo.year,
+                    inline: true,
+                },
+                {
+                    name: "📜 Status",
+                    value: mangaInfo.status,
+                    inline: true,
+                },
+                {
+                    name: "💯 Average rating",
+                    value: mangaInfo.rating,
+                    inline: true,
+                },
+                {
+                    name: "📚 Last chapter",
+                    value: mangaInfo.lastChapter,
+                    inline: true,
+                },
+                {
+                    name: "🗯 Alternate title",
+                    value:
+                        mangaInfo.localizedAltTitles.length > 1020
+                            ? mangaInfo.localizedAltTitles.substring(0, 1020) +
+                              "..."
+                            : mangaInfo.localizedAltTitles,
+                },
+                {
+                    name: "🏷️ Tags",
+                    value:
+                        mangaInfo.tags.length > 1020
+                            ? mangaInfo.tags.substring(0, 1020) + "..."
+                            : mangaInfo.tags,
+                },
+                {
+                    name: "💬 Links",
+                    value:
+                        mangaInfo.links.length > 1020
+                            ? mangaInfo.links.substring(0, 1020) + "..."
+                            : mangaInfo.links,
+                },
+            ]);
+        if (mangaInfo.cover) embed.setThumbnail(mangaInfo.cover);
+        return embed;
     }
     async search(options) {
         if (!options)
@@ -77,18 +205,25 @@ module.exports = class Manga {
     async resumeReading({ sessionId, mangaId }, interaction) {
         let session;
         if (sessionId) {
-            session = await readingSessionDatabase.findOne({
+            session = await readingSessionDatabase.findOneAndUpdate({
                 sessionId,
                 userId: interaction.user.id
+            }, {
+                lastUpdated: Date.now()
+            }, {
+                new: true
             });
         } else if (mangaId) {
-            session = await readingSessionDatabase.findOne({
+            session = await readingSessionDatabase.findOneAndUpdate({
                 mangaId,
                 userId: interaction.user.id
+            }, {
+                lastUpdated: Date.now()
+            }, {
+                new: true
             });
         } else {
-            interaction.followUp({ content: `There was an error when i tried to resume your reading session. (likely not from your side) Please inform the developer about this.` });
-            return false;
+            session = null;
         };
 
         if (!session) return false;
@@ -159,6 +294,11 @@ module.exports = class Manga {
                 .setLabel('Show session ID')
                 .setCustomId("copyidreadingbtn")
                 .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                .setLabel('Notify on/off')
+                .setCustomId("notifyreadingbtn")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('🔔'),
             ]);
 
             const embed = new EmbedBuilder()
@@ -233,6 +373,11 @@ module.exports = class Manga {
                 .setLabel('Show session ID')
                 .setCustomId("copyidreadingbtn")
                 .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                .setLabel('Notify on/off')
+                .setCustomId("notifyreadingbtn")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('🔔')
             ]);
     
             const embed = new EmbedBuilder()
@@ -250,7 +395,28 @@ module.exports = class Manga {
             return true;
         };
     }
-    async handleInitialRead(chapter, manga, interaction) {
+    async handleInitialRead(option, manga, interaction) {
+        let chapter;
+        if (option.chapterId) {
+            const fetchedChapter = await this.getChapter(option.chapterId);
+            if (fetchedChapter.message === "No results found.") {
+                interaction.followUp({
+                    content: `That chapter isn't avaliable to read anymore <:Sapo:1078667608196391034>`,
+                    ephemeral: true,
+                });
+                return;
+            }
+            if (fetchedChapter.error) {
+                interaction.followUp({
+                    content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${fetchedChapter.message}\``,
+                    ephemeral: true,
+                });
+                return;
+            };
+            chapter = fetchedChapter;
+        } else {
+            chapter = option.chapter
+        }
         if (chapter.isExternal) {
             let uploader = await chapter.uploader.resolve();
             let resolvedGroups = await MFA.resolveArray(chapter.groups)
@@ -308,6 +474,11 @@ module.exports = class Manga {
                 .setLabel('Show session ID')
                 .setCustomId("copyidreadingbtn")
                 .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                .setLabel('Notify on/off')
+                .setCustomId("notifyreadingbtn")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('🔔'),,
             ]);
 
             const embed = new EmbedBuilder()
@@ -343,12 +514,18 @@ module.exports = class Manga {
                 });
                 if (!readingData) return;
                 else {
+                    readingData.lastUpdated = Date.now();
+                    readingData.progressChapterId = chapter.id;
+                    if (!readingData.notifyChapter || Number(readingData.notifyChapter) < Number(chapter.chapter)) {
+                        readingData.notifyChapter = chapter.chapter;
+                    }
                     readingData.readingLanguage = chapter.translatedLanguage;
                     readingData.progress = chapter.chapter;
                     await readingData.save();
                     return;
                 }
             } else {
+                session.lastUpdated = Date.now();
                 session.chapterId = chapter.id;
                 session.messageId = msg.id;
                 session.currentChapter = chapter.chapter || 0;
@@ -363,6 +540,11 @@ module.exports = class Manga {
                 });
                 if (!readingData) return;
                 else {
+                    readingData.lastUpdated = Date.now();
+                    readingData.progressChapterId = chapter.id;
+                    if (!readingData.notifyChapter || Number(readingData.notifyChapter) < Number(chapter.chapter)) {
+                        readingData.notifyChapter = chapter.chapter;
+                    }
                     readingData.readingLanguage = chapter.translatedLanguage;
                     readingData.progress = chapter.chapter;
                     await readingData.save();
@@ -425,6 +607,11 @@ module.exports = class Manga {
                 .setLabel('Show session ID')
                 .setCustomId("copyidreadingbtn")
                 .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                .setLabel('Notify on/off')
+                .setCustomId("notifyreadingbtn")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('🔔'),
             ]);
             
     
@@ -461,12 +648,18 @@ module.exports = class Manga {
                 });
                 if (!readingData) return;
                 else {
+                    readingData.lastUpdated = Date.now();
+                    readingData.progressChapterId = chapter.id;
+                    if (!readingData.notifyChapter || Number(readingData.notifyChapter) < Number(chapter.chapter)) {
+                        readingData.notifyChapter = chapter.chapter;
+                    }
                     readingData.readingLanguage = chapter.translatedLanguage;
                     readingData.progress = chapter.chapter;
                     await readingData.save();
                     return;
                 }
             } else {
+                session.lastUpdated = Date.now();
                 session.chapterId = chapter.id;
                 session.messageId = msg.id;
                 session.currentChapter = chapter.chapter || 0;
@@ -481,6 +674,11 @@ module.exports = class Manga {
                 });
                 if (!readingData) return;
                 else {
+                    readingData.lastUpdated = Date.now();
+                    readingData.progressChapterId = chapter.id;
+                    if (!readingData.notifyChapter || Number(readingData.notifyChapter) < Number(chapter.chapter)) {
+                        readingData.notifyChapter = chapter.chapter;
+                    }
                     readingData.readingLanguage = chapter.translatedLanguage;
                     readingData.progress = chapter.chapter;
                     await readingData.save();
@@ -496,17 +694,38 @@ module.exports = class Manga {
             const tryResumeRead = await this.resumeReading({ mangaId }, interaction);
             if (tryResumeRead) return;
         };
+
+        
         const manga = await MFA.Manga.get(mangaId).catch((err) => {
             this.client.logger.error(err);
-            return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+            return null
         });
+        if (!manga) return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.`, ephemeral: true });
+
+        if (!skipTryResume) {
+            const readingListData = await readingListDatabase.findOneAndUpdate({
+                mangaId: manga.id,
+                userId: interaction.user.id
+            }, {
+                lastUpdated: Date.now()
+            }, {
+                new: true
+            });
+    
+            if (readingListData?.progressChapterId) {
+                return this.handleInitialRead({ chapterId: readingListData.progressChapterId }, manga, interaction);
+            };
+        }
+
         let chapters = await MFA.Manga.getFeed(mangaId, { limit: Infinity, order: {
             chapter: 'asc'
         }})
         .catch((err) => {
             this.client.logger.error(err);
-            return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.\nError message: \`${err.message}\``, ephemeral: true });
+            return null
         });
+
+        if (!chapters) return interaction.followUp({ content: `An error occured when i go grab the results. (likely not from your side) Please inform the developer about this.`, ephemeral: true });
 
         if (!chapters.length) return interaction.followUp({ content: `This manga doesn't have any chapters avaliable yet.` });
         
@@ -867,7 +1086,7 @@ module.exports = class Manga {
         });
         collector.on('end', async() => {
             if (endValue) {
-                if (endValue.reason !== 'showinfo') return this.handleInitialRead(chaptersList[endValue.value - 1], manga, interaction);
+                if (endValue.reason !== 'showinfo') return this.handleInitialRead({chapter: chaptersList[endValue.value - 1]}, manga, interaction);
             } else {
                 row.components.forEach(button => button.setDisabled(true));
                 row2.components.forEach(button => button.setDisabled(true));

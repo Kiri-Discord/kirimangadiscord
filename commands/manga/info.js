@@ -9,21 +9,6 @@ const {
 
 const readingListDatabase = require("../../database/readingList");
 
-const linksTitle = {
-    al: "AniList",
-    ap: "AnimePlanet",
-    bw: "BookWalker",
-    mu: "MangaUpdates",
-    nu: "NovelUpdates",
-    kt: "Kitsu",
-    amz: "Amazon",
-    ebj: "eBookJapan",
-    mal: "MyAnimeList",
-    raw: "Raw",
-    engtl: "English",
-    cdj: "CDJapan",
-};
-
 exports.run = async (client, interaction, bridge) => {
     let manga;
     let query;
@@ -63,118 +48,10 @@ exports.run = async (client, interaction, bridge) => {
         manga = bridge.bridgedManga;
         if (bridge.bridgedTitle) query = bridge.bridgedTitle;
     }
-    const stats = await manga.getStatistics();
 
-    const tags = manga.tags
-        .map((tag) => tag.localizedName.en)
-        .filter((tag) => Boolean(tag));
-    const altTitles = manga.localizedAltTitles.map(
-        (title) => Object.values(title)[0]
-    );
-    const authors = await Promise.all(
-        manga.authors.map((author) => author.resolve())
-    );
-    const artists = await Promise.all(
-        manga.artists.map((artist) => artist.resolve())
-    );
+    const embed = await client.manga.generateEmbedInfo(manga);
 
-    const cover = await manga.mainCover.resolve();
-
-    const mangaInfo = {
-        authors: authors.length
-            ? authors.map((author) => author.name).join(", ")
-            : "???",
-        artists: artists.length
-            ? artists.map((artist) => artist.name).join(", ")
-            : "???",
-        links:
-            manga.links.availableLinks && manga.links.availableLinks.length
-                ? manga.links.availableLinks
-                      .map((link) => Boolean(linksTitle[link]) ? `[${linksTitle[link]}](${manga.links[link]})` : null)
-                      .filter((link) => Boolean(link))
-                      .join(", ")
-                : "???",
-        description: manga.description || "No description provided",
-        localizedAltTitles: altTitles.length ? altTitles.join(", ") : "???",
-        tags: tags.length ? tags.join(", ") : "???",
-        status: manga.status || "???",
-        lastChapter: Boolean(manga.lastChapter)
-            ? `Chapter ${manga.lastChapter}`
-            : "???",
-        year: manga.year || "???",
-        rating: stats?.rating?.average ? `${stats.rating.average} ⭐` : "???",
-    };
-
-    const embed = new EmbedBuilder()
-        .setColor("FF6740")
-        .setURL(`https://mangadex.org/title/${manga.id}`)
-        .setTitle(manga.title)
-        .setDescription(
-            mangaInfo.description.length > 4000
-                ? mangaInfo.description.substring(0, 4000) + "..."
-                : mangaInfo.description
-        )
-        .addFields([
-            {
-                name: "✍ Authors",
-                value:
-                    mangaInfo.authors.length > 1020
-                        ? mangaInfo.authors.substring(0, 1020) + "..."
-                        : mangaInfo.authors,
-                inline: true,
-            },
-            {
-                name: "🎨 Artists",
-                value:
-                    mangaInfo.artists.length > 1020
-                        ? mangaInfo.artists.substring(0, 1020) + "..."
-                        : mangaInfo.artists,
-                inline: true,
-            },
-            {
-                name: "🧨 Publication Year",
-                value: `${mangaInfo.year}`,
-                inline: true,
-            },
-            {
-                name: "📜 Status",
-                value: mangaInfo.status,
-                inline: true,
-            },
-            {
-                name: "💯 Average rating",
-                value: mangaInfo.rating,
-                inline: true,
-            },
-            {
-                name: "📚 Last chapter",
-                value: mangaInfo.lastChapter,
-                inline: true,
-            },
-            {
-                name: "🗯 Alternate title",
-                value:
-                    mangaInfo.localizedAltTitles.length > 1020
-                        ? mangaInfo.localizedAltTitles.substring(0, 1020) +
-                          "..."
-                        : mangaInfo.localizedAltTitles,
-            },
-            {
-                name: "🏷️ Tags",
-                value:
-                    mangaInfo.tags.length > 1020
-                        ? mangaInfo.tags.substring(0, 1020) + "..."
-                        : mangaInfo.tags,
-            },
-            {
-                name: "💬 Links",
-                value:
-                    mangaInfo.links.length > 1020
-                        ? mangaInfo.links.substring(0, 1020) + "..."
-                        : mangaInfo.links,
-            },
-        ]);
-    if (cover && cover.imageSource) embed.setThumbnail(cover.imageSource);
+    
     if (bridge?.followUp) {
         return interaction.followUp({
             embeds: [embed],
@@ -182,9 +59,13 @@ exports.run = async (client, interaction, bridge) => {
             ephemeral: true,
         });
     };
-    const database = await readingListDatabase.findOne({
+    const database = await readingListDatabase.findOneAndUpdate({
         mangaId: manga.id,
         userId: interaction.user.id
+    }, {
+        lastUpdated: Date.now(),
+    }, {
+        new: true
     });
     const row = new ActionRowBuilder().addComponents([
         new ButtonBuilder()
@@ -204,15 +85,20 @@ exports.run = async (client, interaction, bridge) => {
         .setCustomId("showmorebtn")
         .setStyle(ButtonStyle.Success)
         .setEmoji("🔎")
-        .setDisabled(!query),
+        .setDisabled(!query)
+    ]);
+
+    const array = [
         new ButtonBuilder()
-        .setLabel('Read')
+        .setLabel('Read from the beginning')
         .setCustomId("startreadinginfobtn")
         .setStyle(ButtonStyle.Success)
         .setEmoji('📖'),
-    ]);
+    ];
+    if (database.progress && database.progressChapterId) array.unshift(new ButtonBuilder().setCustomId(`resumereadinginfobtn`).setLabel(`Resume (Chapter ${database.progress})`).setEmoji('🔖').setStyle(ButtonStyle.Success));
+    const row1 = new ActionRowBuilder().addComponents(array);
     const filter = async res => {
-        if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn' || res.customId === 'startreadinginfobtn' || res.customId === 'removereadingbtn') {
+        if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn' || res.customId === 'startreadinginfobtn' || res.customId === 'removereadingbtn' || res.customId === 'resumereadinginfobtn') {
             if (res.user.id !== interaction.user.id) {
                 res.reply({
                     content: `This buttons are for ${interaction.user.toString()} <:hutaoWHEEZE:1085918596955394180>`,
@@ -224,7 +110,7 @@ exports.run = async (client, interaction, bridge) => {
     };
     const msg = await interaction.editReply({
         embeds: [embed],
-        components: [row],
+        components: [row, row1],
         fetchReply: true,
         content: Boolean(bridge) ? "Here you go!" : null
     });
@@ -247,7 +133,8 @@ exports.run = async (client, interaction, bridge) => {
                 userId: interaction.user.id
             }, {
                 mangaId: manga.id,
-                userId: interaction.user.id
+                userId: interaction.user.id,
+                lastUpdated: Date.now(),
             }, {
                 upsert: true,
                 new: true,
@@ -255,13 +142,14 @@ exports.run = async (client, interaction, bridge) => {
             row.components[0].setDisabled(true);
             row.components[1].setDisabled(false);
             await res.editReply({
-                components: [row],
+                components: [row, row1],
             })
             return res.followUp({ content: `Added **${manga.title}** to your reading list 📖`, ephemeral: true })
-        } else if (res.customId === 'startreadinginfobtn') {
+        } else if (res.customId === 'resumereadinginfobtn') {
+            if (!database.progressChapterId) return;
             collector.stop();
             await res.deferUpdate();
-            return client.manga.handleRead(manga.id, interaction);
+            return client.manga.handleInitialRead({chapterId: database.progressChapterId}, manga, interaction);
         } else if (res.customId === 'removereadingbtn') {
             await res.deferUpdate();
             await readingListDatabase.findOneAndDelete({
@@ -273,9 +161,13 @@ exports.run = async (client, interaction, bridge) => {
             row.components[1].setDisabled(true);
 
             await res.editReply({
-                components: [row],
+                components: [row, row1],
             })
             return res.followUp({ content: `Removed **${manga.title}** from your reading list ❌`, ephemeral: true })
+        } else if (res.customId === 'startreadinginfobtn') {
+            collector.stop();
+            await res.deferUpdate();
+            return client.manga.handleRead(manga.id, interaction, true);
         };
     });
     collector.on('end', async(collection, reason) => {

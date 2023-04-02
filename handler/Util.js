@@ -10,6 +10,7 @@ module.exports = class Util {
             return null;
         };
     };
+	static epoch = 1680282000;
     static async paginatedMangaSearch(interaction, array, msg, [row, row1], filter, authorId, resLength, { time = 60000 } = {}) {
 		return new Promise(async (resolve, reject) => {
 			let currentPage = 0;

@@ -11,6 +11,7 @@ if (!fs.existsSync("logs/error")) fs.mkdirSync("logs/error");
 const { GatewayIntentBits, Sweepers } = require('discord.js');
 const Client = require('./structures/Client');
 
+
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
     sweepers: {
