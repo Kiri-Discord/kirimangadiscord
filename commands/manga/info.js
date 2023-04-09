@@ -95,7 +95,7 @@ exports.run = async (client, interaction, bridge) => {
         .setStyle(ButtonStyle.Success)
         .setEmoji('📖'),
     ];
-    if (database.progress && database.progressChapterId) array.unshift(new ButtonBuilder().setCustomId(`resumereadinginfobtn`).setLabel(`Resume (Chapter ${database.progress})`).setEmoji('🔖').setStyle(ButtonStyle.Success));
+    if (database?.progress && database?.progressChapterId) array.unshift(new ButtonBuilder().setCustomId(`resumereadinginfobtn`).setLabel(`Resume (Chapter ${database?.progress})`).setEmoji('🔖').setStyle(ButtonStyle.Success));
     const row1 = new ActionRowBuilder().addComponents(array);
     const filter = async res => {
         if (res.customId === 'showmorebtn' || res.customId === 'addreadingbtn' || res.customId === 'startreadinginfobtn' || res.customId === 'removereadingbtn' || res.customId === 'resumereadinginfobtn') {
@@ -146,10 +146,10 @@ exports.run = async (client, interaction, bridge) => {
             })
             return res.followUp({ content: `Added **${manga.title}** to your reading list 📖`, ephemeral: true })
         } else if (res.customId === 'resumereadinginfobtn') {
-            if (!database.progressChapterId) return;
+            if (!database?.progressChapterId) return;
             collector.stop();
             await res.deferUpdate();
-            return client.manga.handleInitialRead({chapterId: database.progressChapterId}, manga, interaction);
+            return client.manga.handleInitialRead({chapterId: database?.progressChapterId}, manga, interaction);
         } else if (res.customId === 'removereadingbtn') {
             await res.deferUpdate();
             await readingListDatabase.findOneAndDelete({
