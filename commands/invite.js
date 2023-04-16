@@ -6,9 +6,9 @@ exports.run = async(client, interaction) => {
 }
 
 exports.info = {
-    name: 'inviteme',
-    description: 'Want to invite me to your server? Use this command to get my invite link!',
+    name: 'invite',
+    description: 'Invite link to add me to your server and my support server invite link.',
     slash: new SlashCommandBuilder()
-    .setName('inviteme')
-    .setDescription('Want to invite me to your server? Use this command to get my invite link!')
+    .setName('invite')
+    .setDescription('Invite link to add me to your server and my support server invite link.')
 }
