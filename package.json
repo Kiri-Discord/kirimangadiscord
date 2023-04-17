@@ -24,7 +24,7 @@
         "command-line-args": "^5.2.1",
         "discord.js": "^14.9.0",
         "dotenv": "^16.0.3",
-        "glob": "^9.3.4",
+        "glob": "^10.1.0",
         "heatsync": "^2.4.0",
         "iso-639-1": "^2.1.15",
         "mangadex-full-api": "^5.12.1",
