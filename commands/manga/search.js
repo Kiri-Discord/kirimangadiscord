@@ -19,6 +19,7 @@ exports.run = async(client, interaction, bridgedTitle) => {
     const demographic = interaction.options.getString('demographic');
     const originalLanguage = interaction.options.getString('original-language');
     const translatedLanguage = interaction.options.getString('translated-language');
+    const rating = interaction.options.getString('rating');
 
     if (!bridgedTitle) await interaction.deferReply();
 
@@ -29,6 +30,10 @@ exports.run = async(client, interaction, bridgedTitle) => {
     if (authorOrArtist) options.authorOrArtist = authorOrArtist;
     if (status) options.status = [status];
     if (demographic) options.publicationDemographic = [demographic];
+    if (rating) {
+        if (rating === 'erotica') options.contentRating = ["safe","suggestive","erotica"];
+        else if (rating === 'pornographic') options.contentRating = ["safe","suggestive","erotica", "pornographic"];
+    } else options.contentRating = ["safe","suggestive"];
 
     if (translatedLanguage) {
         const lang = iso.getCode(translatedLanguage.toLowerCase());
@@ -332,5 +337,12 @@ exports.info = {
         }, {
             "name": "Seinen",
             "value": "seinen"
+        }))
+        .addStringOption(option => option.setName('rating').setDescription('Option to include manga with explicit content').addChoices({
+            "name": "Erotica",
+            "value": "erotica"
+        }, {
+            "name": "Erotica and Pornographic",
+            "value": "pornographic"
         }))
 }

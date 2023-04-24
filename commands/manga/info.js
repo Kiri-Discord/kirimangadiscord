@@ -23,10 +23,17 @@ exports.run = async (client, interaction, bridge) => {
 
         await interaction.deferReply();
 
+        const rating = interaction.options.getString('rating');
+
         let options = {
             title: query,
             limit: 1,
         };
+
+        if (rating) {
+            if (rating === 'erotica') options.contentRating = ["safe","suggestive","erotica"];
+            else if (rating === 'pornographic') options.contentRating = ["safe","suggestive","erotica", "pornographic"];
+        } else options.contentRating = ["safe","suggestive"];
 
         const results = await client.manga.search(options);
         if (results.error) {
@@ -196,5 +203,12 @@ exports.info = {
                     "The title of the manga to look for."
                 )
                 .setRequired(true)
-        ),
+        )
+        .addStringOption(option => option.setName('rating').setDescription('Option to include manga with explicit content').addChoices({
+            "name": "Erotica",
+            "value": "erotica"
+        }, {
+            "name": "Erotica and Pornographic",
+            "value": "pornographic"
+        })),
 };
