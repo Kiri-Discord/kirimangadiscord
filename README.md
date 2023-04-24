@@ -1,26 +1,51 @@
+---
+title: Welcome
+description: Your loyal assistant, packed with levelings, fun ecomony and many more features to bring entertainment to your server! 
+---
 
-# Kiri
+<p align="center">
+<img alt="Mio Avatar" src="https://i.imgur.com/P7VKgy0.png"/>
+</p>
 
-## Info
-Kiri is a bot that keep you up-to-date with your favourite manga, and allowing you to read them right on Discord. Powered by MangaDex and discord.js.
+<h1><center>Hi, I'm Mio!</center></h1>
+==========
 
-***
+I'm Mio, an manga assistant that allow you to read manga right on Discord while keeping track of your favourite manga through DM!
 
-Check out [le cafe](https://discord.gg/R3QMteNWSw) where i will host it  
-Support for forking / bugs can be found in the Issue tab.
-DM **magix#3994** for support and help.
+Please note that I'm still in beta, you should join our support server if you encounter problem.
+<a href="https://discord.gg/TSAWFjcj2m">Support server</a> · <a href="https://discord.com/api/oauth2/authorize?client_id=1011670700597194802&permissions=536870928&scope=bot%20applications.commands">Invite me</a></center>
 
+✨ What i have in store for you (〃＾▽＾〃)
+---------------------
 
-## License
-Kiri is licensed under the terms of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://github.com/ryzenix/kirimangadiscord/blob/main/LICENSE) ("CC-BY-NC-SA-4.0"). Commercial use is not allowed under this license. This includes any kind of revenue made with or based upon the software, even donations.
+* 📢 **Unique notification feature** that keep you up to date with manga that you are reading
+* 📕 **Reading list** keeping all of your favourite manga in a place, even when you have finished them
+* ✨ **Reading sessions** offer easy control when reading a manga, you can also share your reading session with other people
 
-The CC-BY-NC-SA-4.0 allows you to:
-- [x] **Share** -- copy and redistribute the material in any medium or format
-- [x] **Adapt** -- remix, transform, and build upon the material
+📢 Updates and Support
+----------------------
 
-Under the following terms:
-- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
-- **NonCommercial** — You may not use the material for commercial purposes. 
-- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
+[Support server](https://discord.gg/TSAWFjcj2m)
 
-More information can be found [here](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+🤗 Donation and Perks
+---------------------
+
+This is not required, but donating will keep me alive and performing well!
+
+* [Our Patreon](https://www.patreon.com/kiridiscord)
+
+🖼 Features examples
+--------
+
+Curious to wait? Here are some image to satisfy your curiosity!
+
+![](https://i.imgur.com/2Pf92Nv.png)
+![](https://i.imgur.com/wbmrdvO.png)
+![](https://i.imgur.com/1xrbGiu.png)
+![](https://i.imgur.com/pjV6hWp.png)
+![](https://i.imgur.com/lUeDBeZ.png)
+
+🛠️ Help
+--------
+
+Simply run `/help` to get started! Additional help can also be found when clicking on the **F.A.Q** button under most of my responses.

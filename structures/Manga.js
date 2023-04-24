@@ -189,7 +189,7 @@ module.exports = class Manga {
         return results;
     }
     async getRandomManga() {
-        const results = await MFA.Manga.getRandom(undefined, true).catch((err) => {
+        const results = await MFA.Manga.getRandom(["safe", "suggestive"], true).catch((err) => {
             this.client.logger.error(err);
             return {
                 error: true,
