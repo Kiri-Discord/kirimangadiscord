@@ -451,7 +451,7 @@ module.exports = class Manga {
                 .setLabel('Next chapter')
                 .setCustomId("nextchapterreadbtn")
                 .setEmoji('⏩')
-                .setStyle(2),
+                .setStyle(2)
             ]);
             const row1 = new ActionRowBuilder()
             .addComponents([
@@ -478,7 +478,7 @@ module.exports = class Manga {
                 .setLabel('Notify on/off')
                 .setCustomId("notifyreadingbtn")
                 .setStyle(ButtonStyle.Primary)
-                .setEmoji('🔔'),,
+                .setEmoji('🔔')
             ]);
 
             const embed = new EmbedBuilder()
@@ -584,7 +584,7 @@ module.exports = class Manga {
                 .setLabel('Next chapter')
                 .setCustomId("nextchapterreadbtn")
                 .setEmoji('⏩')
-                .setStyle(2),
+                .setStyle(2)
             ]);
             const row1 = new ActionRowBuilder()
             .addComponents([
@@ -611,9 +611,8 @@ module.exports = class Manga {
                 .setLabel('Notify on/off')
                 .setCustomId("notifyreadingbtn")
                 .setStyle(ButtonStyle.Primary)
-                .setEmoji('🔔'),
+                .setEmoji('🔔')
             ]);
-            
     
             const embed = new EmbedBuilder()
             .setDescription(`**Chapter ${chapter.chapter || 0}${Boolean(chapter.title) ? `: ${chapter.title}` : ''}**`)
