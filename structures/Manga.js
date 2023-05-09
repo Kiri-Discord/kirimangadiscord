@@ -59,7 +59,7 @@ module.exports = class Manga {
             tags: tags.length ? tags.join(", ") : "???",
             status: manga.status || "???",
             lastChapter: manga.lastChapter || "???",
-            year: String(manga.year) || "???",
+            year: manga.year ? String(manga.year) : "???",
             rating: stats?.rating?.average ? `${stats.rating.average} ⭐` : "???",
             cover: cover?.imageSource || null,
         };
