@@ -25,7 +25,7 @@
         "discord.js": "^14.11.0",
         "dotenv": "^16.0.3",
         "heatsync": "^2.4.1",
-        "glob": "^10.2.2",
+        "glob": "^10.2.4",
         "iso-639-1": "^2.1.15",
         "mangadex-full-api": "^5.12.1",
         "mongoose": "^7.1.0",
