@@ -69,9 +69,10 @@ module.exports = {
                         return errFunction(err);
                     }
                 };
-    
                 ws.onmessage = async(e) => {
-                    sendEmbed(JSON.parse(e.data));
+                    const data = JSON.parse(e.data);
+                    if (data.ping) return ws.send('hi')
+                    else sendEmbed(data);
                 };
             })
         }
@@ -105,7 +106,9 @@ module.exports = {
         };
 
         wsConnection.onmessage = async(e) => {
-            sendEmbed(JSON.parse(e.data));
+            const data = JSON.parse(e.data);
+            if (data.ping) return wsConnection.send('hi')
+            else sendEmbed(data);
         };
     },
 };
